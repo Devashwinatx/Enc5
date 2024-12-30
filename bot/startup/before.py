@@ -8,8 +8,6 @@ from bot.utils.bot_utils import create_api_token
 from bot.utils.local_db_utils import load_local_db
 from bot.utils.os_utils import file_exists
 
-uptime = dt.now()
-
 LOGS.info("=" * 30)
 LOGS.info(f"Python version: {sys.version.split()[0]}")
 
@@ -51,6 +49,7 @@ if conf.REPORT_FAILED_DL:
 if conf.REPORT_FAILED_ENC:
     _bot.report_failed_enc = True
 
+
 if not file_exists(ffmpeg_file):
     with open(ffmpeg_file, "w") as file:
         file.write(str(conf.FFMPEG) + "\n")
@@ -89,6 +88,7 @@ if not os.path.isdir("mux/"):
     os.mkdir("mux/")
 if not os.path.isdir("minfo/"):
     os.mkdir("minfo/")
+
 
 if conf.TEMP_USER:
     for t in conf.TEMP_USER.split():
@@ -166,7 +166,7 @@ class EnTimer:
     def __init__(self):
         self.ind_pause = conf.LOCK_ON_STARTUP
         self.time = 0
-        self.msg = None
+        self.msg = []
 
     async def start(self):
         asyncio.create_task(self.timer())
@@ -191,7 +191,7 @@ class EnTimer:
                         )
                 except Exception:
                     pass
-                self.msg = None
+                self.msg = []
 
     def new_timer(self, new_time, lmsg=None):
         if isinstance(new_time, int):

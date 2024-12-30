@@ -1,6 +1,6 @@
 import uuid
 
-from bot import asyncio, math, os, pyro, qbClient, time
+from bot import asyncio, math, os, pyro, qb_lock, qbClient, time
 from bot.config import _bot, conf
 from bot.utils.bot_utils import (
     Qbit_c,
@@ -35,10 +35,11 @@ def rm_leech_file(*gids):
             log(Exception)
 
 
-def get_qbclient():
+def get_qbclient(temp=False):
+    port = conf.QBIT_PORT if not temp else conf.QBIT_PORT2
     return qbClient(
         host="localhost",
-        port=conf.QBIT_PORT,
+        port=port,
         VERIFY_WEBUI_CERTIFICATE=False,
         REQUESTS_ARGS={"timeout": (30, 60)},
     )
@@ -66,9 +67,9 @@ async def rm_torrent_tag(*tags, qb=None):
             log(Exception)
 
 
-async def get_files_from_torrent(hash, tag=None):
+async def get_files_from_torrent(hash, tag=None, qb=None):
     # qb.login()
-    qb = await sync_to_async(get_qbclient)
+    qb = await sync_to_async(get_qbclient) if not qb else qb
     torrent = await sync_to_async(qb.torrents_info, torrent_hash=hash, tag=tag)
     files = torrent[0].files
     file_list = [file["name"] for file in files]
@@ -127,7 +128,9 @@ async def get_leech_name(url):
             ):
                 await asyncio.sleep(2)
                 continue
-            if not (os.path.splitext(download.name))[1] and not download.total_length:
+            if not download.total_length and (
+                not (ext := os.path.splitext(download.name)[1]) or "?" in ext
+            ):
                 await asyncio.sleep(2)
                 continue
 
@@ -141,12 +144,12 @@ async def get_leech_name(url):
         return dinfo
 
 
-async def get_torrent(url):
+async def base_get_torrent(url):
     qinfo = Qbit_c()
     tag = "qb_dl" + str(uuid.uuid4())
     url = replace_proxy(url)
     try:
-        qb = await sync_to_async(get_qbclient)
+        qb = await sync_to_async(get_qbclient, True)
         op = await sync_to_async(
             qb.torrents_add,
             url,
@@ -183,7 +186,7 @@ async def get_torrent(url):
             return
         qinfo.hash = tor_info[0].hash
         await sync_to_async(qb.torrents_pause, torrent_hashes=qinfo.hash)
-        qinfo.file_list = await get_files_from_torrent(qinfo.hash, tag)
+        qinfo.file_list = await get_files_from_torrent(qinfo.hash, tag, qb)
         qinfo.count = len(qinfo.file_list)
         name = (os.path.split(qinfo.file_list[0]))[1] if qinfo.count == 1 else None
         qinfo.name = name or tor_info[0].name
@@ -195,6 +198,11 @@ async def get_torrent(url):
         await logger(Exception)
     finally:
         return qinfo
+
+
+async def get_torrent(url):
+    async with qb_lock:
+        return await base_get_torrent(url)
 
 
 async def cache_dl(check=False, cached=False):

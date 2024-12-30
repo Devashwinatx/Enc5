@@ -9,7 +9,7 @@ from bot.fun.quips import enquip3
 from bot.fun.quotes import enquotes
 from bot.others.exceptions import ArgumentParserError
 
-from .bot_utils import gfn, is_url, sync_to_async
+from .bot_utils import get_pause_status, gfn, is_url, sync_to_async
 from .log_utils import log, logger
 from .os_utils import s_remove
 
@@ -141,6 +141,9 @@ async def enpause(message):
         " `Bot has been paused to continue, unpause bot using the /pause command`"
     )
     while _bot.paused:
+        if get_pause_status() == "rss":
+            if len(_bot.paused) == 1:
+                break
         try:
             await message.edit(enmoji() + pause_msg)
             await asyncio.sleep(10)
@@ -154,10 +157,29 @@ async def enpause(message):
             await logger(Exception)
 
 
-async def send_rss(msg: str, chat_id: int = None):
+def get_expanded_chats(chats):
+    expanded_chat = []
+    for chat in chats:
+        (
+            expanded_chat.append(chat)
+            if chat
+            else expanded_chat.extend(conf.RSS_CHAT.split())
+        )
+    return expanded_chat
+
+
+async def send_rss(msg: str, chat_ids: list = None):
     try:
-        chat = chat_id or conf.RSS_CHAT
-        return await avoid_flood(tele.send_message, chat, msg)
+        chats = (
+            [chat_ids] if not isinstance(chat_ids, list) else chat_ids
+        )  # backward compatibility
+        for chat in get_expanded_chats(chats):
+            top_chat = chat.split(":")
+            chat, top_id = (
+                map(int, top_chat) if len(top_chat) > 1 else (int(top_chat[0]), None)
+            )
+            event = await avoid_flood(tele.send_message, chat, msg, reply_to=top_id)
+        return event
     except Exception:
         await logger(Exception)
 

@@ -73,6 +73,7 @@ class Config:
             self.PAUSE_ON_DL_INFO = config("PODI", default=True, cast=bool)
             self.QDL_TIMEOUT = config("QBIT_DL_TIMEOUT", default=0, cast=int)
             self.QBIT_PORT = config("QBIT_PORT", default=8090, cast=int)
+            self.QBIT_PORT2 = config("QBIT_PORT2", default=9090, cast=int)
             self.QBIT_TIMEOUT = config("QBIT_TIMEOUT", default=20, cast=int)
             self.RELEASER = config("RELEASER", default="A-M|ANi-MiNE")
             self.REPORT_FAILED = config("REPORT_FAILED", default=True, cast=bool)
@@ -80,7 +81,7 @@ class Config:
             self.REPORT_FAILED_ENC = config(
                 "REPORT_FAILED_ENC", default=False, cast=bool
             )
-            self.RSS_CHAT = config("RSS_CHAT", default=0, cast=int)
+            self.RSS_CHAT = config("RSS_CHAT", default=0, cast=str)
             self.RSS_DELAY = config("RSS_DELAY", default=60, cast=int)
             self.RSS_DIRECT = config("RSS_DIRECT", default=True, cast=bool)
             self.TELEGRAPH_API = config(

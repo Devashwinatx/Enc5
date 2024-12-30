@@ -3,6 +3,7 @@ from bot.fun.emojis import enmoji, enmoji2
 from bot.fun.quips import enquip, enquip2
 from bot.utils.bot_utils import encode_job as ejob
 from bot.utils.log_utils import logger
+from bot.utils.rss_utils import scheduler
 from bot.workers.auto.status import autostat
 from bot.workers.auto.transcode import something
 
@@ -32,7 +33,10 @@ async def start_aria2p():
 
 async def start_qbit():
     os.system(
-        f"qbittorrent-nox -d --webui-port={conf.QBIT_PORT} --profile={os.getcwd()}"
+        f"qbittorrent-nox -d --webui-port={conf.QBIT_PORT} --profile={os.getcwd()}/qbit"
+    )
+    os.system(
+        f"qbittorrent-nox -d --webui-port={conf.QBIT_PORT2} --profile={os.getcwd()}/qbit  --configuration=1"
     )
     # TO_DO: Properly check if qbit is fully operational.
     _bot.sqs = True
@@ -113,6 +117,7 @@ async def on_termination():
 
 async def on_startup():
     try:
+        scheduler.start()
         asyncio.create_task(autostat())
         asyncio.create_task(start_rpc())
         asyncio.create_task(start_qbit())
