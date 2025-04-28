@@ -2,6 +2,6 @@
   "name": "encoding",
   "description": "Upload video In Negligible Size... Automatically",
   "keywords": ["Telegram", "python", "Compressor", "Encoder", "ongoing"],
-  "repository": "https://github.com/Devashwinatx/Enc5", // Add your repo URL here
+  "repository": "https://github.com/Devashwinatx/Enc5", 
   "stack": "container"
 }
