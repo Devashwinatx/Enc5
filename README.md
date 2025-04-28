@@ -34,6 +34,8 @@ Optional Variables | Explanation
   . | *Note:* Update will fail if there are new modules or dependencies in bot. Redeploy if that happens 
 ---
 
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Devashwinatx/Enc5)
+
 
 ### Commands
 ---
